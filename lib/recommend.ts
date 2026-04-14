@@ -1,41 +1,44 @@
 import { Fragrance } from "@/types/fragrance";
 import { UserPreferences } from "@/types/preferences";
 
-//Recommendation algorithm
 export function recommendFragrances(
   fragrances: Fragrance[],
   preferences: UserPreferences
 ): Fragrance[] {
   const scored = fragrances.map((fragrance) => {
-    let score = 0; //Starting score
+    let score = 0;
+
+    const fragranceNotes = fragrance.notes.map((note) => note.toLowerCase());
+    const fragranceOccasions = fragrance.occasion.map((item) => item.toLowerCase());
+    const fragranceSeasons = fragrance.season.map((item) => item.toLowerCase());
+    const fragranceTags = fragrance.tags.map((item) => item.toLowerCase());
 
     for (const note of preferences.notesLiked) {
-      if (fragrance.notes.map((n) => n.toLowerCase()).includes(note.toLowerCase())) {
-        score += 3; //If liked, add 3
+      if (fragranceNotes.includes(note.toLowerCase())) {
+        score += 3;
       }
     }
 
     for (const note of preferences.notesDisliked) {
-      if (fragrance.notes.map((n) => n.toLowerCase()).includes(note.toLowerCase())) {
-        score -= 4; //If disliked, remove 4
+      if (fragranceNotes.includes(note.toLowerCase())) {
+        score -= 4;
       }
     }
 
     if (
       preferences.occasion &&
-      fragrance.occasion.map((o) => o.toLowerCase()).includes(preferences.occasion.toLowerCase())
+      fragranceOccasions.includes(preferences.occasion.toLowerCase())
     ) {
-      score += 2; //If occasion and preference match, add 2
+      score += 2;
     }
 
     if (
       preferences.season &&
-      fragrance.season.map((s) => s.toLowerCase()).includes(preferences.season.toLowerCase())
+      fragranceSeasons.includes(preferences.season.toLowerCase())
     ) {
-      score += 2; //If preference and season match, add 2
+      score += 2;
     }
 
-    //Continue this scoring logic for other attributes
     if (preferences.projection && fragrance.projection === preferences.projection) {
       score += 2;
     }
@@ -52,7 +55,7 @@ export function recommendFragrances(
     }
 
     for (const mood of preferences.mood) {
-      if (fragrance.tags.map((t) => t.toLowerCase()).includes(mood.toLowerCase())) {
+      if (fragranceTags.includes(mood.toLowerCase())) {
         score += 1;
       }
     }
@@ -61,6 +64,7 @@ export function recommendFragrances(
   });
 
   return scored
+    .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5)
     .map((item) => item.fragrance);
