@@ -101,7 +101,13 @@ export default function ChatPage() {
             <div className="space-y-4">
               {recommendations.length === 0 ? (
                 <p className="text-sm text-neutral-500">
-                  No recommendations yet. Try describing a mood, note, or occasion.
+                  Try describing:
+                  <br />
+                  • a mood (e.g. clean, sexy, cozy)
+                  <br />
+                  • notes you like (e.g. vanilla, citrus, woods)
+                  <br />
+                  • when you’ll wear it (e.g. work, date night)
                 </p>
               ) : (
                 recommendations.map((fragrance) => (

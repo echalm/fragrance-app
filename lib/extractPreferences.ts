@@ -17,7 +17,7 @@ const NOTE_KEYWORDS = [
   "patchouli",
   "violet",
   "ambroxan",
-  "marine notes"
+  "marine notes",
 ];
 
 const MOOD_KEYWORDS = [
@@ -34,7 +34,7 @@ const MOOD_KEYWORDS = [
   "minimal",
   "intimate",
   "bold",
-  "smooth"
+  "smooth",
 ];
 
 const OCCASION_KEYWORDS = [
@@ -44,11 +44,10 @@ const OCCASION_KEYWORDS = [
   "work",
   "formal",
   "casual",
-  "special"
+  "special",
 ];
 
 const SEASON_KEYWORDS = ["spring", "summer", "autumn", "winter"];
-
 const PROJECTION_KEYWORDS = ["soft", "moderate", "strong"];
 const LONGEVITY_KEYWORDS = ["low", "medium", "high"];
 const PRICE_KEYWORDS = ["budget", "mid", "luxury"];
@@ -58,33 +57,44 @@ function findKeywords(text: string, keywords: string[]) {
   return keywords.filter((keyword) => text.includes(keyword));
 }
 
+function findNegativeNotes(text: string, notes: string[]) {
+  return notes.filter((note) => {
+    return (
+      text.includes(`no ${note}`) ||
+      text.includes(`not ${note}`) ||
+      text.includes(`avoid ${note}`) ||
+      text.includes(`dont want ${note}`) ||
+      text.includes(`don't want ${note}`) ||
+      text.includes(`no ${note} notes`) ||
+      text.includes(`not ${note} notes`)
+    );
+  });
+}
+
 export function extractPreferences(input: string): UserPreferences {
   const text = input.toLowerCase();
 
-  const notesLiked = findKeywords(text, NOTE_KEYWORDS);
+  const notesDisliked = findNegativeNotes(text, NOTE_KEYWORDS);
+
+  const notesLiked = findKeywords(text, NOTE_KEYWORDS).filter(
+    (note) => !notesDisliked.includes(note)
+  );
+
   const mood = findKeywords(text, MOOD_KEYWORDS);
   const occasion = OCCASION_KEYWORDS.find((keyword) => text.includes(keyword));
   const season = SEASON_KEYWORDS.find((keyword) => text.includes(keyword));
-  const projection = PROJECTION_KEYWORDS.find((keyword) => text.includes(keyword)) as
-    | "soft"
-    | "moderate"
-    | "strong"
-    | undefined;
-  const longevity = LONGEVITY_KEYWORDS.find((keyword) => text.includes(keyword)) as
-    | "low"
-    | "medium"
-    | "high"
-    | undefined;
-  const priceBand = PRICE_KEYWORDS.find((keyword) => text.includes(keyword)) as
-    | "budget"
-    | "mid"
-    | "luxury"
-    | undefined;
+  const projection = PROJECTION_KEYWORDS.find((keyword) =>
+    text.includes(keyword)
+  ) as "soft" | "moderate" | "strong" | undefined;
+  const longevity = LONGEVITY_KEYWORDS.find((keyword) =>
+    text.includes(keyword)
+  ) as "low" | "medium" | "high" | undefined;
+  const priceBand = PRICE_KEYWORDS.find((keyword) =>
+    text.includes(keyword)
+  ) as "budget" | "mid" | "luxury" | undefined;
   const genderPreference = GENDER_KEYWORDS.find((keyword) =>
     text.includes(keyword)
   ) as "masculine" | "feminine" | "unisex" | undefined;
-
-  const notesDisliked: string[] = [];
 
   return {
     mood,

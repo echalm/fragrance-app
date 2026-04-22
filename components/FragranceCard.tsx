@@ -4,6 +4,16 @@ interface FragranceCardProps {
   fragrance: Fragrance;
 }
 
+function generateMatchReason(fragrance: Fragrance) {
+  return `This fragrance aligns with your preferences through its ${fragrance.tags
+    .slice(0, 2)
+    .join(", ")} character, supported by notes like ${fragrance.notes
+    .slice(0, 2)
+    .join(" and ")}. It works particularly well for ${fragrance.occasion.join(
+    ", "
+  )} settings.`;
+}
+
 export default function FragranceCard({ fragrance }: FragranceCardProps) {
   return (
     <article className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
@@ -15,7 +25,7 @@ export default function FragranceCard({ fragrance }: FragranceCardProps) {
       </div>
 
       <p className="mb-4 text-sm leading-6 text-neutral-700">
-        {fragrance.description}
+      {generateMatchReason(fragrance)}
       </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
