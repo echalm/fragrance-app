@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 import { fragrances } from "@/data/fragrances";
 import { extractPreferences } from "@/lib/extractPreferences";
 import { recommendFragrances } from "@/lib/recommend";
+import { mergePreferences } from "@/lib/mergePreferences";
+import { generateAssistantReply } from "@/lib/generateReply";
+import { UserPreferences } from "@/types/preferences";
+
 import ChatWindow from "@/components/ChatWindow";
 import PreferenceSummary from "@/components/PreferenceSummary";
 import FragranceCard from "@/components/FragranceCard";
@@ -16,54 +20,50 @@ type Message = {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "Tell me the kind of fragrance you want. You can describe a mood, occasion, season, or notes you like.",
-    },
-  ]);
+  {
+    id: "1",
+    role: "assistant",
+    content:
+      "Tell me the kind of fragrance you want. You can describe a mood, occasion, season, or notes you like.",
+  },
+]);
 
-  const [input, setInput] = useState("");
+const [input, setInput] = useState("");
 
-  const latestUserMessage =
-    [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
-
-  const preferences = useMemo(() => {
-    return extractPreferences(latestUserMessage);
-  }, [latestUserMessage]);
+const [preferences, setPreferences] = useState<UserPreferences>({
+  mood: [],
+  notesLiked: [],
+  notesDisliked: [],
+});
 
   const recommendations = useMemo(() => {
-    if (!latestUserMessage.trim()) {
-      return [];
-    }
-
-    return recommendFragrances(fragrances, preferences);
-  }, [latestUserMessage, preferences]);
+  return recommendFragrances(fragrances, preferences);
+}, [preferences]);
 
   function handleSendMessage() {
-    const trimmed = input.trim();
+  const trimmed = input.trim();
 
-    if (!trimmed) {
-      return;
-    }
+  if (!trimmed) return;
 
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: trimmed,
-    };
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    role: "user",
+    content: trimmed,
+  };
 
-    const assistantMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content:
-        "Got it. I’ve refined your preferences and selected some fragrances that fit the vibe you described.",
-    };
+  const extracted = extractPreferences(trimmed);
 
-    setMessages((prev) => [...prev, userMessage, assistantMessage]);
-    setInput("");
-  }
+  setPreferences((prev) => mergePreferences(prev, extracted));
+
+  const assistantMessage: Message = {
+    id: Date.now().toString() + "a",
+    role: "assistant",
+    content: generateAssistantReply(extracted),
+  };
+
+  setMessages((prev) => [...prev, userMessage, assistantMessage]);
+  setInput("");
+}
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-8">
